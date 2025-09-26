@@ -11,8 +11,6 @@ export async function getTarefa(req, res) {
       // Se não encontrar, retorna 400
       return res.status(400).json({ erro: "Tarefa não encontrada" });
   }
-  
-  // CORRIGIDO: Se encontrar, retorna APENAS a variável 'tarefa'
   res.json(tarefa); 
 }
 
@@ -24,16 +22,17 @@ export async function getTarefas(req, res) {
 
 export async function createTarefa(req, res) {
   const { titulo, feito } = req.body;
+//verifica se o usuário colocou os campos obrigatórios
     if (!titulo || !feito) {
       return res.status(400).json({ erro: "Título e feito obrigatório" });
     }
-
+//feito para o usuário colocar sim ou não e verifica se o usuário colocou algo diferente
   const feitoSimNao = feito.toLowerCase();
   if (feitoSimNao !== "sim" && feitoSimNao !== "não") {
       return res.status(400).json({ erro: "O campo 'feito' deve ser 'sim' ou 'não'" });
   }
   const tarefaExistente = tarefas.find(t => t.titulo.toLowerCase() === titulo.toLowerCase());
-  
+  //verifica se o usuário colocou o nome de uma tarefa que já existe
   if (tarefaExistente) {
     return res.status(409).json({ erro: "Já existe uma tarefa com este título" });
   }
@@ -52,37 +51,38 @@ export async function updateTarefa(req, res) {
   if (!tarefa) {
       return res.status(404).json({ erro: "Tarefa não encontrada" });
   }
-  // 2. Verifica se o usuário mudou algo
+  //Verifica se o usuário deixou de atualizar o título ou o feito.
   if (!titulo && !feito) {
-      // Usa 500 conforme sua solicitação (embora 400 Bad Request seja mais adequado).
+
       return res.status(500).json({ erro: "É necessário fornecer um novo título ou feito para a atualização" });
   }
-  // 3. Validação e preparação do campo 'feito', se ele foi enviado.
+  //Guarda a atualização do feito
   let feitoParaAtualizar;
   if (feito) {
       feitoParaAtualizar = feito.toLowerCase();
       
-      // Verifica se o valor é 'sim' ou 'não'.
+//Verifica se o usuário colocou sim ou não.
       if (feitoParaAtualizar !== "sim" && feitoParaAtualizar !== "não") {
           return res.status(400).json({ erro: "O campo 'feito' deve ser 'sim' ou 'não'" });
       }
   }
   
-  // Atualiza o título se um novo foi fornecido no corpo da requisição.
+  // Atualiza o título 
   if (titulo) {
       tarefa.titulo = titulo;
   }
-  // Atualiza o 'feito' se um novo valor válido foi preparado.
+  // Atualiza o feito
   if (feitoParaAtualizar) {
       tarefa.feito = feitoParaAtualizar;
   }
 
-  // 5. Retorna a tarefa atualizada.
+  //Retorna a tarefa atualizada.
   res.json(tarefa);
 }
 
 export async function deleteTarefa(req, res) {
   const { id } = req.params;
+//deleta a tarefa
   tarefas = tarefas.filter(t => t.id != id);
   res.json({ msg: "Tarefa removida" });
 };
